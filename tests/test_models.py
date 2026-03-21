@@ -59,6 +59,28 @@ class TestTeamMember:
         restored = TeamMember.model_validate(data)
         assert restored.agent_type == "leader"
 
+    def test_model_name_default(self):
+        m = TeamMember(name="worker")
+        assert m.model_name == ""
+
+    def test_model_name_set(self):
+        m = TeamMember(name="worker", model_name="opus")
+        assert m.model_name == "opus"
+
+    def test_model_name_alias(self):
+        data = {"name": "worker", "modelName": "opus"}
+        m = TeamMember.model_validate(data)
+        assert m.model_name == "opus"
+        dumped = json.loads(m.model_dump_json(by_alias=True))
+        assert dumped["modelName"] == "opus"
+
+    def test_model_name_alias(self):
+        data = {"name": "worker", "modelName": "opus"}
+        m = TeamMember.model_validate(data)
+        assert m.model_name == "opus"
+        dumped = json.loads(m.model_dump_json(by_alias=True))
+        assert dumped["modelName"] == "opus"
+
 
 class TestTeamConfig:
     def test_basic_creation(self):
