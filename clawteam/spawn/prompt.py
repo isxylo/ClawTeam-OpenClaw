@@ -1,10 +1,26 @@
-"""Agent prompt builder — identity + task only.
+"""Agent prompt builder — identity + task + optional role prompt.
 
 Coordination knowledge (how to use clawteam CLI) is provided
 by the ClawTeam Skill, not duplicated here.
 """
 
 from __future__ import annotations
+
+from pathlib import Path
+
+
+def _load_role_prompt(agent_name: str) -> str:
+    """Load an optional role prompt for a worker by agent name."""
+    role_path = (
+        Path(__file__).resolve().parent.parent
+        / "agents"
+        / "imported"
+        / "agency_pack"
+        / f"{agent_name}.md"
+    )
+    if role_path.exists():
+        return role_path.read_text(encoding="utf-8").strip()
+    return ""
 
 
 def build_agent_prompt(
@@ -19,6 +35,8 @@ def build_agent_prompt(
     workspace_branch: str = "",
 ) -> str:
     """Build agent prompt: identity + task + optional workspace info."""
+    role_prompt = _load_role_prompt(agent_name)
+
     lines = [
         "## Identity\n",
         f"- Name: {agent_name}",
@@ -38,6 +56,12 @@ def build_agent_prompt(
             f"- Working directory: {workspace_dir}",
             f"- Branch: {workspace_branch}",
             "- This is an isolated git worktree. Your changes do not affect the main branch.",
+        ])
+    if role_prompt:
+        lines.extend([
+            "",
+            "## Role Prompt",
+            role_prompt,
         ])
     lines.extend([
         "",
